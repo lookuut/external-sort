@@ -61,7 +61,7 @@ void Commander::sortBlocks () {
 	    	SortThread * st = new SortThread(c_sorted_file, c_unsorted_file, number_count, seek + seek_in_bytes, c_locker);
 	    	
 	    	if ((pthread_status = pthread_create(&threads[i], NULL, &SortThread::run, (void*)st)) != 0) {
-				throw runtime_error("Create thread exception with status " + to_string(pthread_status));
+				throw runtime_error("Create thread exception with status " + to_string(static_cast<long long>(pthread_status)));
 	    	}
 
 	    	seek_in_bytes += each_thread_mbytes;
@@ -69,7 +69,7 @@ void Commander::sortBlocks () {
 
 	    for (uint i = 0; i < actual_thread_count; i++) { 
 	        if ((pthread_status = pthread_join(threads[i], NULL)) != 0) {
-	        	throw runtime_error("Join thread error with status " + to_string(pthread_status));
+	        	throw runtime_error("Join thread error with status " + to_string(static_cast<long long>(pthread_status)));
 	        }
 	    }
 
@@ -102,7 +102,7 @@ void Commander::mergeSortedBlocks () {
 
 		readBinaryFile(block, 0, gpos * merge_block_size, merge_block_size, in);
 		
-		for (int lpos = gpos + 1; lpos < block_count; lpos++) {
+		for (uint lpos = gpos + 1; lpos < block_count; lpos++) {
 			
 			uint read_block_size = (lpos + 1) * merge_block_size > c_file_size ? c_file_size - (lpos) * merge_block_size : merge_block_size;
 			readBinaryFile(block, half_size, lpos * merge_block_size, read_block_size, in);
