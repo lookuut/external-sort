@@ -7,26 +7,29 @@
 #include <fstream>
 
 
-
 void Utils::generateBinaryFile (const std::string file_name, const uint sign_number) {
-	ofstream out(file_name, ios::binary | ios::out | ios::in);
+	ofstream out(file_name, ios::binary | ios::out | ios::in | ios::trunc);
 	uint buff_size = MAX_BUFFER_SIZE > sign_number ? sign_number : MAX_BUFFER_SIZE;
 
     std::vector<int32_t> buff(buff_size);
     srand(time(0));
-    uint pos = 0;
-    do {
+    uint seek = 0;
 
-    	out.seekp(pos, ios::beg);
+	while (seek < sign_number * sizeof(int32_t) ) {
+
+    	if (seek / sizeof(int32_t) + buff_size > sign_number) {
+    		buff_size = sign_number - seek / sizeof(int32_t);
+    	}
+
+    	out.seekp(seek, ios::beg);
     	for (uint i = 0; i < buff_size; i++) {
-    		buff[i] =  (i % 2 == 0 ? -1 : 1) * rand() % 25;
+    		buff[i] =  (i % 2 == 0 ? -1 : 1) * (rand() % 25 + 1);
 	    }
 
 	    out.write(reinterpret_cast<const char*>(&buff[0]), buff_size * sizeof(int32_t));
-	    pos += buff_size;
+	    seek += buff_size * sizeof(int32_t);
+    } 
 
-    } while (pos < sign_number);
-	
 	out.close();
 }
 
@@ -34,24 +37,30 @@ void Utils::generateBinaryFile (const std::string file_name, const uint sign_num
 void Utils::checkSortedFile (std::string file_name) {
 	map<int, int> stat;
 
-	uint buff_size = 1024 * 1024  * 64;
+	uint buff_size = MAX_BUFFER_SIZE;
+	
 	ifstream in(file_name, ios::binary | ios::ate);
 	std::vector<int32_t> buffer(buff_size);
+
 	uint pos = 0;
 	bool is_valid = true;
 	uint read_bytes = 0;
+	int value;
 	do  {
 		in.seekg(pos, ios::beg);
 		in.read(reinterpret_cast<char*>( & buffer[0] ),  buff_size * sizeof(int32_t));
 		read_bytes = in.gcount();
 		
-		int value = buffer[0];
+		if (pos == 0) {
+			value = buffer[0];
+		}
 
 		for (uint i = 0; i < (read_bytes / sizeof(int32_t)); i++) {
 			stat[buffer[i]] += 1;
 			if (is_valid && buffer[i] < value) {
 				is_valid = false;
 	   		}
+	   		value = buffer[i];
     	}
     	pos += buff_size * sizeof(int32_t);
 	} while(read_bytes == buff_size * sizeof(int32_t));
