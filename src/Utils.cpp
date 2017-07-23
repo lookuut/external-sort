@@ -69,6 +69,31 @@ void Utils::checkSortedFile (std::string file_name) {
 	cout << "all number count :" << count << " and in bytes " << count * sizeof(int32_t) << endl;
 }
 
+void  Utils::mergeSortVectors(vector<int32_t> * src, vector<int32_t> * buffer, uint spos, uint size) {
+    int i = 0, j = 0, k = 0;
+
+    while (i < spos && j < size - spos)  
+       (*buffer)[k++] = (*src)[i] < (*src)[j + spos] ? (*src)[i++] :  (*src)[j++ + spos];
+
+    while (i < spos)  
+        (*buffer)[k++] = (*src)[i++];
+
+    while (j < size - spos)    
+        (*buffer)[k++] = (*src)[j++ + spos];
+}
+
+void Utils::printVectorStat(vector<int32_t> * vec) {
+	map<int, int> stat;
+
+	for (uint i = 0; i < vec->size(); i++) {
+		stat[(*vec)[i]] += 1;
+	}
+
+	for (std::map<int,int>::iterator it = stat.begin(); it != stat.end(); ++it) {
+		cout << "number " << it->first << " : have count " << it->second << endl;
+	}
+}
+
 int compare (const void * one, const void * two)
 {
 	return *((int*)one) - *((int*)two);   

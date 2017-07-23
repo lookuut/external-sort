@@ -28,8 +28,8 @@ public:
  	void sortBlocks ();
  	void mergeSortedBlocks (); 
 
- 	static void readBinaryFile(vector<int32_t> & buffer, const uint bpos, const uint pos, const uint bytes, ifstream & io);
- 	static void writeBinaryFile(vector<int32_t> & buffer, const uint bpos, const uint size, const uint pos, ofstream & io);
+ 	static void readBinaryFile(vector<int32_t> * buffer, const uint bpos, const uint pos, const uint bytes, ifstream & io);
+ 	static void writeBinaryFile(vector<int32_t> * buffer, const uint bpos, const uint size, const uint pos, ofstream & io);
 
  	~Commander();
 };

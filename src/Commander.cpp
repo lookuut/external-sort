@@ -23,6 +23,10 @@ Commander::Commander(const uint mem_size, const uint max_thread_count, const str
 		c_thread_count--;
 	}
 
+	if (c_thread_count == 1) { // if we have only one thread, memory must divide on two cause in merge place sort 
+		c_mem_mb_size = c_mem_mb_size / 2; 
+	}
+	
 	c_locker = new mutex();
 }
 
@@ -77,53 +81,65 @@ void Commander::sortBlocks () {
 	}
 }
 
-void Commander::readBinaryFile(vector<int32_t> & buffer, uint bpos, uint pos, uint bytes, ifstream & io) {
+void Commander::readBinaryFile(vector<int32_t> * buffer, uint bpos, uint pos, uint bytes, ifstream & io) {
 	io.seekg(pos, ios_base::beg);
-	io.read(reinterpret_cast<char*>( & buffer[bpos] ), bytes);
+	io.read(reinterpret_cast<char*>(  &(*buffer)[bpos] ), bytes);
 }
 
-void Commander::writeBinaryFile(vector<int32_t> & buffer, uint bpos, uint size, uint pos, ofstream & io) {
+void Commander::writeBinaryFile(vector<int32_t> * buffer, uint bpos, uint size, uint pos, ofstream & io) {
 	io.seekp(pos, ios_base::beg);		
-	io.write(reinterpret_cast<const char*>(&buffer[bpos]), size * sizeof(int32_t));
+	io.write(reinterpret_cast<const char*>(&(*buffer)[bpos]), size * sizeof(int32_t));
 	io.flush();
 }
 
 void Commander::mergeSortedBlocks () {
-	uint merge_block_size = c_thread_count == 1 ? (c_mem_mb_size / 2) : c_mem_mb_size  / c_thread_count;
+	uint merge_block_size = c_mem_mb_size  / c_thread_count;
 	uint block_count = c_file_size / merge_block_size;
 	
 	ofstream out(c_sorted_file, ios::binary | ios::out | ios::in);
 	ifstream in(c_sorted_file, ios::binary | ios::in);
 
 	uint half_size = merge_block_size / sizeof(int32_t);
-	vector<int32_t> block(2 * half_size);
-
+	
+	vector<int32_t> * block = new vector<int32_t>(half_size + half_size);
+	vector<int32_t> * buffer = new vector<int32_t>(half_size + half_size);
+	
 	for (uint gpos = 0; gpos < (uint)(block_count / 2); gpos++) {
 
 		readBinaryFile(block, 0, gpos * merge_block_size, merge_block_size, in);
 		
 		for (uint lpos = gpos + 1; lpos < block_count; lpos++) {
-			
 			uint read_block_size = (lpos + 1) * merge_block_size > c_file_size ? c_file_size - (lpos) * merge_block_size : merge_block_size;
 			readBinaryFile(block, half_size, lpos * merge_block_size, read_block_size, in);
-		qsort( & block[0], half_size + read_block_size / sizeof(int32_t), sizeof(int32_t), compare);
-		writeBinaryFile(block, half_size, read_block_size / sizeof(int32_t), lpos * merge_block_size, out);
+			Utils::mergeSortVectors(block, buffer, half_size, half_size + read_block_size / sizeof(int32_t));
+			vector<int> * v = block;
+			block = buffer;
+			buffer = v;
+			writeBinaryFile(block, half_size, read_block_size / sizeof(int32_t), lpos * merge_block_size, out);
+		}
+
+		writeBinaryFile(block, 0, half_size, gpos * merge_block_size, out);
+		
+		uint read_block_size = (block_count - gpos) * merge_block_size > c_file_size ? c_file_size - (block_count - 1 - gpos) * merge_block_size : merge_block_size;
+		readBinaryFile(block, half_size, (block_count - 1 - gpos) * merge_block_size, read_block_size, in);
+
+		for (int lpos = block_count - 2 - gpos; lpos >= 0; lpos--) {
+			readBinaryFile(block, 0, lpos * merge_block_size, merge_block_size, in);
+
+			Utils::mergeSortVectors(block, buffer, read_block_size / sizeof(int32_t), half_size + read_block_size / sizeof(int32_t));
+
+			vector<int> * v = buffer;
+			buffer = block;
+			block = v;
+			
+			writeBinaryFile(block, 0, half_size, lpos * merge_block_size, out);
+		}
+		writeBinaryFile(block, half_size, read_block_size / sizeof(int32_t), (block_count - 1 - gpos) * merge_block_size, out);
+		cout <<  (int)(100 * gpos / (block_count / 2)) << "%" << endl;
 	}
 
-	writeBinaryFile(block, 0, half_size, gpos * merge_block_size, out);
-	
-	uint read_block_size = (block_count - gpos) * merge_block_size > c_file_size ? c_file_size - (block_count - 1 - gpos) * merge_block_size : merge_block_size;
-	readBinaryFile(block, half_size, (block_count - 1 - gpos) * merge_block_size, read_block_size, in);
-
-	for (int lpos = block_count - 2 - gpos; lpos >= 0; lpos--) {
-		readBinaryFile(block, 0, lpos * merge_block_size, merge_block_size, in);
-		qsort( & block[0], half_size + read_block_size / sizeof(int32_t), sizeof(int32_t), compare);
-		writeBinaryFile(block, 0, half_size, lpos * merge_block_size, out);
-	}
-
-	writeBinaryFile(block, half_size, read_block_size / sizeof(int32_t), (block_count - 1 - gpos) * merge_block_size, out);
-	cout <<  (int)(100 * gpos / (block_count / 2)) << "%" << endl;
-	}
+	delete block;
+	delete buffer;
 
 	out.close();
 	in.close();

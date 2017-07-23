@@ -10,6 +10,10 @@ using namespace std;
 #include "Utils.h"
 
 
+void ss (int ** a, int ** b) {
+	a = b;
+}
+
 int main(int argc, char ** argv) {
 	
 	if (argc <= 4) {
@@ -33,17 +37,18 @@ int main(int argc, char ** argv) {
 	}
 
 	try {
+		Utils f = Utils();
 		//f.generateBinaryFile("unsorted.bin", 16000001);
-		//f.checkSortedFile("unsorted.bin");
-		
+		f.checkSortedFile(unsorted_file);
+
 		Commander c(mem_size, max_thread_count, unsorted_file, sorted_file);
 		c.sort();
 		
-		Utils f = Utils();
-		f.checkSortedFile("sorted.bin");
+		f.checkSortedFile(sorted_file);
+		//f.checkSortedFile("unsorted.bin");*/
 		
 	} catch (std::exception & exc) {
-		cout << exc.what() << endl;
+		cout << exc.what() << "-----------" << endl;
 	}
 	
 	return 0;
