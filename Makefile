@@ -8,4 +8,4 @@ checker:
 generator: 
 	$(CC) $(CFLAGS) src/BinaryGenerator.cpp src/Utils.cpp  -o binary_file_generator.out
 clean: 
-	rm -rf sort binary_file_checker binary_file_generator
+	rm -rf *.out
