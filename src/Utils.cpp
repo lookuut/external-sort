@@ -70,7 +70,7 @@ void Utils::checkSortedFile (std::string file_name) {
 }
 
 void  Utils::mergeSortVectors(vector<int32_t> * src, vector<int32_t> * buffer, uint spos, uint size) {
-    int i = 0, j = 0, k = 0;
+    uint i = 0, j = 0, k = 0;
 
     while (i < spos && j < size - spos)  
        (*buffer)[k++] = (*src)[i] < (*src)[j + spos] ? (*src)[i++] :  (*src)[j++ + spos];
