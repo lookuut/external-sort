@@ -1,6 +1,9 @@
-# External Sort implementation in C++
+# External Sort in C++
 
-**External sorting** is a technique used to efficiently sort large datasets that don't fit entirely into the computer's memory (RAM). It involves dividing the data into smaller chunks that can be sorted in memory, and then merging these sorted chunks to produce the final sorted output. One commonly used algorithm for external sorting is the Merge Sort algorithm. Here's how it works:
+Open source project **external sort in C++** allows to efficiently sort large datasets that don't fit entirely into the computer's memory (RAM).
+It involves dividing the data into smaller chunks that can be sorted in memory, and then merging these sorted chunks to produce the final sorted output. 
+One commonly used algorithm for external sorting is the Merge Sort algorithm. 
+Here's how it works:
 
 ## Merge Sort Algorithm for External Sorting:
 
