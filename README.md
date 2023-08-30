@@ -15,7 +15,16 @@
 The key advantage of merge sort in the context of external sorting is that it minimizes the amount of data loaded into memory at any given time, and it works well with sequential access patterns.
 
 
-## compile 
+## Compile
+```
 g++ -Wall -std=c++0x -lpthread  src/main.cpp src/Utils.cpp src/Commander.cpp src/SortThread.cpp -o ex
-./ex {max memory in MB} {max thread count} {unsorted binary file} {sorted finary file name}
+```
 
+## Running
+```
+./ex {max memory in MB} {max thread count} {unsorted binary file} {sorted file name}
+```
+- max memory in MB - Max memory allowed to store chunks
+- max thread count - Max concurrency thread count
+- unsorted binary file - input binary file
+- sorted file name - out sorted file name
